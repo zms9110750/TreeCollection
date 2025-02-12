@@ -8,11 +8,18 @@ namespace zms9110750.TreeCollection;
 /// <param name="initValue">初始值</param>
 public class TreeNode<T>(T? initValue) : TreeNodeBase<T>(initValue)
 {
-	public TreeNode(T? initValue, Func<T, IEnumerable<T>> childrenFactory) : this(initValue)
+	public TreeNode(T? initValue, Func<T, IEnumerable<T>> childrenFactory) : this(initValue, childrenFactory, [initValue])
+	{
+	}
+	protected TreeNode(T? initValue, Func<T, IEnumerable<T>> childrenFactory, HashSet<T> set) : this(initValue)
 	{
 		foreach (var child in childrenFactory(initValue!))
 		{
-			Children.Add(new TreeNode<T>(child, childrenFactory));
+			if (!set.Add(initValue!))
+			{
+				throw new ArgumentException("Duplicate child value found.");
+			}
+			Children.Add(new TreeNode<T>(child, childrenFactory,set));
 		}
 	}
 	/// <summary>
@@ -44,11 +51,19 @@ public class TreeNode<T>(T? initValue) : TreeNodeBase<T>(initValue)
 		}
 		if (offset == Count)
 		{
+#if NET9_0_OR_GREATER
 			Children.AddRange(nodes);
+#else
+			Children.AddRange(nodes.ToArray());
+#endif
 		}
 		else
 		{
+#if NET9_0_OR_GREATER
 			Children.InsertRange(offset, nodes);
+#else
+			Children.InsertRange(offset, nodes.ToArray());
+#endif
 		}
 		UpdateIndex(index..);
 	}

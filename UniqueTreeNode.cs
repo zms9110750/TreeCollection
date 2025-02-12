@@ -5,11 +5,18 @@ namespace zms9110750.TreeCollection;
 
 public class UniqueTreeNode<T>(T? initValue) : TreeNodeBase<T>(initValue)
 {
-	public UniqueTreeNode(T? initValue, Func<T, IEnumerable<T>> childrenFactory) : this(initValue)
+	public UniqueTreeNode(T? initValue, Func<T, IEnumerable<T>> childrenFactory) : this(initValue, childrenFactory, [initValue])
+	{
+	}
+	protected UniqueTreeNode(T? initValue, Func<T, IEnumerable<T>> childrenFactory, HashSet<T> set) : this(initValue)
 	{
 		foreach (var child in childrenFactory(initValue!))
 		{
-			Children.Add(new UniqueTreeNode<T>(child, childrenFactory));
+			if (!set.Add(initValue!))
+			{
+				throw new ArgumentException("Duplicate child value found.");
+			}
+			Children.Add(new UniqueTreeNode<T>(child, childrenFactory, set));
 		}
 	}
 
