@@ -1,8 +1,10 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using zms9110750.TreeCollection.Abstract;
 using zms9110750.TreeCollection.Extension;
 namespace zms9110750.TreeCollection;
+[JsonObject]
 public class TreeNode<T>(T initValue) : TreeList<TreeNode<T>>, IEquatable<T>
 {
 	#region override
@@ -194,11 +196,11 @@ public class TreeNode<T>(T initValue) : TreeList<TreeNode<T>>, IEquatable<T>
 	/// <summary>
 	/// 前一个兄弟节点
 	/// </summary>
-	public TreeNode<T>? PreviousSibling => RequiredParent[Index - 1];
+	public TreeNode<T>? PreviousSibling => Parent is { } parent && Index > 0 ? parent[Index - 1] : null;
 	/// <summary>
 	/// 后一个兄弟节点
 	/// </summary>
-	public TreeNode<T>? NextSibling => RequiredParent[Index + 1];
+	public TreeNode<T>? NextSibling => Parent is { } parent && Index < parent.Count - 1 ? parent[Index + 1] : null;
 	/// <summary>
 	/// 获取第一个子节点。
 	/// </summary>

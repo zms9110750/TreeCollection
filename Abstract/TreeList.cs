@@ -2,7 +2,7 @@
 
 namespace zms9110750.TreeCollection.Abstract;
 public abstract class TreeList<T> : ITreeList<T>
-{
+{ 
 	/// <summary>
 	/// 内部集合
 	/// </summary>
