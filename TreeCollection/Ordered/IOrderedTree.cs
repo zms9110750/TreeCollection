@@ -1,4 +1,5 @@
 ﻿using zms9110750.TreeCollection.Abstract;
+using zms9110750.InterfaceImplAsExtensionGenerator;
 namespace zms9110750.TreeCollection.Ordered;
 
 /// <summary>
@@ -7,7 +8,7 @@ namespace zms9110750.TreeCollection.Ordered;
 /// <typeparam name="TValue">值类型</typeparam>
 /// <typeparam name="TNode">自我约束</typeparam>
 /// <remarks>节点提供<see cref="Index"/>属性，并允许<see cref="MoveChild(int, int)"/>改变索引</remarks>
-[InterfaceImplAsExtensionGenerator.Config.InterfaceImplAsExtension]
+[ExtensionSource]
 public interface IOrderedTree<TValue, TNode> : IValue<TValue>, INode<TNode>, IList<TNode> where TNode : IOrderedTree<TValue, TNode>, INode<TNode>
 {
 	/// <summary>
@@ -56,11 +57,11 @@ public interface IOrderedTree<TValue, TNode> : IValue<TValue>, INode<TNode>, ILi
 #endif
 		if (fromIndex < toIndex)
 		{
-			this[fromIndex..toIndex].RotateForward();
+			this[fromIndex..(toIndex + 1)].RotateForward();
 		}
 		else
 		{
-			this[toIndex..fromIndex].RotateBackward();
+			this[toIndex..(fromIndex + 1)].RotateBackward();
 		}
 	}
 
@@ -81,10 +82,10 @@ public interface IOrderedTree<TValue, TNode> : IValue<TValue>, INode<TNode>, ILi
 
 	/// <remarks>添加值时应当跳过检查步骤。</remarks>
 	/// <inheritdoc cref="AddAt(int, TNode)" />
-	TNode AddAt(int index, TValue node);
+	TNode AddAt(int index, TValue value);
 
 	/// <inheritdoc cref="AddAt(int, TValue)" />
-	void AddAt(int index, params IEnumerable<TValue> node);
+	void AddAt(int index, params IEnumerable<TValue> value);
 
 	/// <summary>
 	/// 替换节点
@@ -96,7 +97,7 @@ public interface IOrderedTree<TValue, TNode> : IValue<TValue>, INode<TNode>, ILi
 	bool Replace(TNode oldNode, TNode newNode);
 
 	/// <summary>
-	/// 查找并移除具有指定值的节点
+	/// 查找并移除第一个具有指定值的子节点
 	/// </summary>
 	/// <param name="value">查找值</param>
 	/// <returns>被移除的节点以提供链式调用</returns>
@@ -115,10 +116,10 @@ public interface IOrderedTree<TValue, TNode> : IValue<TValue>, INode<TNode>, ILi
 	/// <summary>
 	/// 移除节点
 	/// </summary>
-	/// <param name="value">子节点</param>
+	/// <param name="node">子节点</param>
 	/// <returns><inheritdoc cref="Remove(TValue)" path="/returns" /></returns>
 	/// <remarks>如果参数不是子节点，则返回null。</remarks>
-	new TNode? Remove(TNode value);
+	new TNode? Remove(TNode node);
 
 	bool ICollection<TNode>.Remove(TNode item)
 	{
@@ -233,7 +234,7 @@ public interface IOrderedTree<TValue, TNode> : IValue<TValue>, INode<TNode>, ILi
 	/// 切片接口
 	/// </summary>
 	/// <remarks>对于一些遍历节点查找值的方法，此接口提供相同功能并仅在范围内遍历。</remarks>
-	[InterfaceImplAsExtensionGenerator.Config.InterfaceImplAsExtension]
+	[ExtensionSource]
 	public interface ISlice : IReadOnlyList<TNode>
 	{
 		/// <summary>
@@ -248,13 +249,28 @@ public interface IOrderedTree<TValue, TNode> : IValue<TValue>, INode<TNode>, ILi
 		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.RemoveAll(Predicate{TNode}?)"/>
 		int RemoveAll(Predicate<TNode>? match = null);
 
+		/// <summary>
+		/// 在切片范围内查询是否包含指定值的节点
+		/// </summary>
 		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.Contains(TValue)"/>
 		bool Contains(TValue value);
 
-		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.IndexOf(TValue)"/>
+		/// <summary>
+		/// 在切片的范围内查找指定值的索引
+		/// </summary>
+		/// <param name="value">查找值</param>
+		/// <returns>找到的第一个节点的原始索引，找不到则返回-1</returns>
+		/// <remarks>返回的是节点在父节点中的原始绝对索引，而非切片内的相对索引。<br/>
+		/// 因为带范围参数的扩展方法会调用切片上的此方法，
+		/// 调用方期望得到的索引可用于父节点上的 <c>RemoveAt(index)</c>、<c>MoveChild(index, ...)</c> 等操作。</remarks>
 		int IndexOf(TValue value);
 
-		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.LastIndexOf(TValue)"/>
+		/// <summary>
+		/// 在切片的范围内从后往前查找指定值的索引
+		/// </summary>
+		/// <param name="value">查找值</param>
+		/// <returns>找到的最后一个节点的原始索引，找不到则返回-1</returns>
+		/// <inheritdoc cref="IndexOf(TValue)" path="/remarks"/>
 		int LastIndexOf(TValue value);
 
 		/// <summary>

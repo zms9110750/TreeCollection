@@ -198,9 +198,10 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 		{
 			return null;
 		}
+		var index = item.Index;
 		item.Parent = null;
 		ChildrenNode.Remove(item);
-		this[item.Index..].UpdateIndex();
+		this[index..].UpdateIndex();
 		item.Index = -1;
 		return item;
 	}
@@ -266,12 +267,13 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 	public int RemoveAll(Predicate<TreeNode<T>>? match = null)
 	{
 		int removed = 0;
-		foreach (var node in this)
+		for (int i = Count - 1; i >= 0; i--)
 		{
-			if (match == null || match(node))
+			if (match == null || match(ChildrenNode[i]))
 			{
-				node.Parent = null;
-				node.Index = -1;
+				ChildrenNode[i].Parent = null;
+				ChildrenNode[i].Index = -1;
+				ChildrenNode.RemoveAt(i);
 				removed++;
 			}
 		}
@@ -391,7 +393,7 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 
 
 		/// <inheritdoc/>
-		public bool IsValid => listNode.Version != _version;
+		public bool IsValid => listNode.Version == _version;
 
 
 		/// <inheritdoc/>
@@ -461,11 +463,12 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 		{
 			ValidateVersion();
 			int removed = 0;
-			for (int i = Span.Length - 1; i >= 0; i--)
+			// 倒序遍历，用绝对索引，避免 Span 随列表缩小而越界
+			for (int i = start + length - 1; i >= start; i--)
 			{
-				if (match == null || match(Span[i]))
+				if (match == null || match(listNode[i]))
 				{
-					listNode.RemoveAt(start + i);
+					listNode.RemoveAt(i);
 					removed++;
 				}
 			}
@@ -487,7 +490,7 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 			}
 
 			var first = Span[0];
-			Span[..^1].CopyTo(Span[1..]);
+			Span[1..].CopyTo(Span[..^1]);
 			Span[^1] = first;
 			UpdateIndex();
 		}
@@ -502,7 +505,7 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 			}
 
 			var last = Span[^1];
-			Span[1..].CopyTo(Span[..^1]);
+			Span[..^1].CopyTo(Span[1..]);
 			Span[0] = last;
 			UpdateIndex();
 		}
@@ -529,12 +532,16 @@ public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeN
 
 		IEnumerator<TreeNode<T>> IEnumerable<TreeNode<T>>.GetEnumerator()
 		{
-			throw new NotImplementedException();
+			ValidateVersion();
+			for (int i = start; i < start + length; i++)
+			{
+				yield return listNode[i];
+			}
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			throw new NotImplementedException();
+			return ((IEnumerable<TreeNode<T>>)this).GetEnumerator();
 		}
 	}
 }

@@ -1,4 +1,4 @@
-﻿using zms9110750.InterfaceImplAsExtensionGenerator.Config;
+﻿using zms9110750.InterfaceImplAsExtensionGenerator;
 
 #pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 namespace zms9110750.TreeCollection.Abstract;
@@ -6,11 +6,9 @@ namespace zms9110750.TreeCollection.Abstract;
 /// <summary>
 /// 为接口提供扩展方法。以便调用默认实现
 /// </summary>
-[ExtendWithInterfaceImpl(typeof(INode<>))]
+[ExtensionFor(typeof(INode<>))]
 public static partial class NodeExtension
 {
-	static InvalidOperationException NoParentException => field ??= new InvalidOperationException("node has no parent");
-
 	extension<TNode>(INode<TNode> node) where TNode : INode<TNode>
 	{
 		/// <summary>
@@ -18,7 +16,7 @@ public static partial class NodeExtension
 		/// </summary>
 		public TNode RequiredParent
 		{
-			get => node.Parent ?? throw NoParentException;
+			get => node.Parent ?? throw new InvalidOperationException("node has no parent");
 		}
 	}
 

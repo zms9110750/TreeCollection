@@ -19,7 +19,7 @@ public static partial class IOrderedTreeExtension
 		/// <summary>
 		/// 获得最后个子节点。不存在时返回null
 		/// </summary>
-		public TNode? LastChild => instance.Count > 0 ? instance[0] : default;
+		public TNode? LastChild => instance.Count > 0 ? instance[^1] : default;
 
 		/// <summary>
 		/// 获得前一个兄弟节点。不存在时返回null
@@ -41,7 +41,7 @@ public static partial class IOrderedTreeExtension
 		public void AddAt(Index index, params ReadOnlySpan<TNode> nodes) => instance.AddAt(index.GetOffset(instance.Count), nodes);
 
 		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.AddAt(int, TValue)"/>
-		public TNode AddAt(Index index, TValue node) => instance.AddAt(index.GetOffset(instance.Count), node);
+		public TNode AddAt(Index index, TValue value) => instance.AddAt(index.GetOffset(instance.Count), value);
 
 		/// <inheritdoc cref="IOrderedTree{TValue, TNode}.AddAt(int, IEnumerable{TValue})"/>
 		public void AddAt(Index index, params IEnumerable<TValue> nodes) => instance.AddAt(index.GetOffset(instance.Count), nodes);
