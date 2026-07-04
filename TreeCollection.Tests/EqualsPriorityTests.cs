@@ -9,13 +9,12 @@ public class EqualsPriorityTests
     {
         var node = new TreeNode<string>("hello");
 
-        // 调用 node.Equals("hello") — object.Equals(object) 还是扩展的 Equals(string)?
+        // node.Equals("hello") 走的是 object.Equals(object?)，引用比较，返回 false
+        // 扩展方法的 Equals(string) 参数更精确，但实例方法永远优先于扩展方法
         var result = node.Equals("hello");
 
-        // 如果走 object.Equals，是引用比较，node 不是 "hello"，返回 false
-        // 如果走扩展的 Equals(string)，是值比较，返回 true
         WriteLine($"node.Equals(\"hello\") = {result}");
-        Assert.True(result, "应该走值比较，返回 true");
+        Assert.False(result, "object.Equals 优先于扩展方法，所以是引用比较");
     }
 
     [Fact]
@@ -41,6 +40,8 @@ public class EqualsPriorityTests
         Assert.True(result);
     }
 
-    private static void WriteLine(string msg) =>
+    private static void WriteLine(string msg)
+    {
         System.Diagnostics.Debug.WriteLine(msg);
+    }
 }
