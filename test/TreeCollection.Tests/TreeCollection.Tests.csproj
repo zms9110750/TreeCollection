@@ -18,6 +18,6 @@
     <Using Include="Xunit" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TreeCollection\TreeCollection.csproj" />
+    <ProjectReference Include="..\..\src\TreeCollection\TreeCollection.csproj" />
   </ItemGroup>
 </Project>
