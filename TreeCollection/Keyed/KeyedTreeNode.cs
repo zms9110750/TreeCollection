@@ -93,33 +93,6 @@ public class KeyedTreeNode<TKey, TValue> : RootNode<TValue, KeyedTreeNode<TKey, 
         _children.Clear();
     }
 
-    // ==================== ICollection<KeyValuePair> (explicit) ====================
-
-    void ICollection<KeyValuePair<TKey, KeyedTreeNode<TKey, TValue>>>.Add(KeyValuePair<TKey, KeyedTreeNode<TKey, TValue>> item)
-    {
-        Add(item.Key, item.Value);
-    }
-
-    bool ICollection<KeyValuePair<TKey, KeyedTreeNode<TKey, TValue>>>.Remove(KeyValuePair<TKey, KeyedTreeNode<TKey, TValue>> item)
-    {
-        if (_children.TryGetValue(item.Key, out var existing) && EqualityComparer<KeyedTreeNode<TKey, TValue>>.Default.Equals(existing, item.Value))
-        {
-            return Remove(item.Key);
-        }
-        return false;
-    }
-
-    bool ICollection<KeyValuePair<TKey, KeyedTreeNode<TKey, TValue>>>.Contains(KeyValuePair<TKey, KeyedTreeNode<TKey, TValue>> item)
-    {
-        return _children.TryGetValue(item.Key, out var existing) && EqualityComparer<KeyedTreeNode<TKey, TValue>>.Default.Equals(existing, item.Value);
-    }
-
-    void ICollection<KeyValuePair<TKey, KeyedTreeNode<TKey, TValue>>>.CopyTo(KeyValuePair<TKey, KeyedTreeNode<TKey, TValue>>[] array, int arrayIndex)
-    {
-        ((ICollection<KeyValuePair<TKey, KeyedTreeNode<TKey, TValue>>>)_children).CopyTo(array, arrayIndex);
-    }
-
-    // ==================== IEnumerator ====================
 
     /// <inheritdoc/>
     public KeyedTreeNode<TKey, TValue>? RemoveBy(TKey key)

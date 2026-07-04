@@ -14,7 +14,7 @@ namespace zms9110750.TreeCollection.Ordered;
 /// <typeparam name="T">储存值类型</typeparam>
 /// <param name="value">初始值</param>
 [JsonConverter(typeof(TreeListNodeConverterFactory))]
-public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IList<TreeNode<T>>, IOrderedTree<T, TreeNode<T>>
+public class TreeNode<T>(T value) : RootNode<T, TreeNode<T>>(value), IOrderedTree<T, TreeNode<T>>
 {
     /// <inheritdoc/>
     protected override List<TreeNode<T>> ChildrenNode { get; } = [];

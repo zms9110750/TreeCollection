@@ -1,116 +1,147 @@
-using zms9110750.TreeCollection.Abstract;
 using zms9110750.InterfaceImplAsExtensionGenerator;
+using zms9110750.TreeCollection.Abstract;
 
 namespace zms9110750.TreeCollection.Keyed;
 
 /// <summary>
-/// »ùÓÚ¼üµÄÓĞĞòÊ÷½Úµã½Ó¿Ú¡£×Ó½ÚµãÍ¨¹ı¼ü·ÃÎÊ£¬°´¼üÅÅĞò¡£
+/// åŸºäºé”®çš„æœ‰åºæ ‘èŠ‚ç‚¹æ¥å£ã€‚å­èŠ‚ç‚¹é€šè¿‡é”®è®¿é—®ï¼ŒæŒ‰é”®æ’åºã€‚
 /// </summary>
 [ExtensionSource]
 public interface IKeyedTree<TKey, TValue, TNode> : IValue<TValue>, INode<TNode>, IDictionary<TKey, TNode>
-	where TKey : notnull
-	where TNode : IKeyedTree<TKey, TValue, TNode>
+    where TKey : notnull
+    where TNode : IKeyedTree<TKey, TValue, TNode>
 {
-	private static EqualityComparer<TValue> ValueComparer => EqualityComparer<TValue>.Default;
+    private static EqualityComparer<TValue> ValueComparer => EqualityComparer<TValue>.Default;
 
-	/// <summary>
-	/// ÓÃÖµ´´½¨ĞÂ½Úµã²¢Ìí¼Óµ½Ö¸¶¨¼ü
-	/// </summary>
-	TNode Add(TKey key, TValue value);
+    /// <summary>
+    /// ç”¨å€¼åˆ›å»ºæ–°èŠ‚ç‚¹å¹¶æ·»åŠ åˆ°æŒ‡å®šé”®
+    /// </summary>
+    TNode Add(TKey key, TValue value);
 
-	/// <summary>
-	/// ÒÆ³ıÖ¸¶¨¼üµÄ×Ó½Úµã²¢·µ»Ø¡£ĞèÒªÍ¬Ê±ÖÃ Parent = null¡£
-	/// </summary>
-	TNode? RemoveBy(TKey key);
+    /// <summary>
+    /// ç§»é™¤æŒ‡å®šé”®çš„å­èŠ‚ç‚¹å¹¶è¿”å›ã€‚éœ€è¦åŒæ—¶ç½® Parent = nullã€‚
+    /// </summary>
+    TNode? RemoveBy(TKey key);
 
-	/// <summary>
-	/// °Ñ×Ó½Úµã´Ó¾É¼ü¸ÄÎªĞÂ¼ü£¨ÖØĞÂÉèÖÃ key£©¡£
-	/// </summary>
-	/// <param name="sourceKey">µ±Ç°¼ü</param>
-	/// <param name="targetKey">Ä¿±ê¼ü</param>
-	/// <exception cref="KeyNotFoundException"><paramref name="sourceKey"/> ²»´æÔÚ</exception>
-	/// <exception cref="ArgumentException"><paramref name="targetKey"/> ÒÑ´æÔÚ</exception>
-	void ChangeKey(TKey sourceKey, TKey targetKey)
-	{
-		if (ContainsKey(targetKey))
-		{
-			throw new ArgumentException($"Target key '{targetKey}' already exists.", nameof(targetKey));
-		}
-		var node = RemoveBy(sourceKey) ?? throw new KeyNotFoundException($"Source key '{sourceKey}' not found.");
-		Add(targetKey, node);
-		IncrementVersion();
-	}
+    /// <summary>
+    /// æŠŠå­èŠ‚ç‚¹ä»æ—§é”®æ”¹ä¸ºæ–°é”®ï¼ˆé‡æ–°è®¾ç½® keyï¼‰ã€‚
+    /// </summary>
+    /// <param name="sourceKey">å½“å‰é”®</param>
+    /// <param name="targetKey">ç›®æ ‡é”®</param>
+    /// <exception cref="KeyNotFoundException"><paramref name="sourceKey"/> ä¸å­˜åœ¨</exception>
+    /// <exception cref="ArgumentException"><paramref name="targetKey"/> å·²å­˜åœ¨</exception>
+    void ChangeKey(TKey sourceKey, TKey targetKey)
+    {
+        if (ContainsKey(targetKey))
+        {
+            throw new ArgumentException($"Target key '{targetKey}' already exists.", nameof(targetKey));
+        }
+        var node = RemoveBy(sourceKey) ?? throw new KeyNotFoundException($"Source key '{sourceKey}' not found.");
+        Add(targetKey, node);
+        IncrementVersion();
+    }
 
-	/// <summary>
-	/// ½»»»Á½¸ö×Ó½ÚµãµÄ¼ü
-	/// </summary>
-	void SwapChildren(TKey keyA, TKey keyB)
-	{
-		var nodeA = RemoveBy(keyA) ?? throw new KeyNotFoundException($"Key '{keyA}' not found.");
-		var nodeB = RemoveBy(keyB) ?? throw new KeyNotFoundException($"Key '{keyB}' not found.");
-		Add(keyA, nodeB);
-		Add(keyB, nodeA);
-		IncrementVersion();
-	}
+    /// <summary>
+    /// äº¤æ¢ä¸¤ä¸ªå­èŠ‚ç‚¹çš„é”®
+    /// </summary>
+    void SwapChildren(TKey keyA, TKey keyB)
+    {
+        var nodeA = RemoveBy(keyA) ?? throw new KeyNotFoundException($"Key '{keyA}' not found.");
+        var nodeB = RemoveBy(keyB) ?? throw new KeyNotFoundException($"Key '{keyB}' not found.");
+        Add(keyA, nodeB);
+        Add(keyB, nodeA);
+        IncrementVersion();
+    }
 
-	/// <summary>
-	/// Ìæ»»×Ó½Úµã£¨±£Áô¼ü£©¡£ÓÉÊµÏÖÀàÍ¨¹ı this[TKey] setter ´¦Àí Parent ±ä¸ü¡£
-	/// </summary>
-	bool Replace(TNode oldNode, TNode newNode)
-	{
-		foreach (var kvp in this)
-		{
-			if (EqualityComparer<TNode>.Default.Equals(kvp.Value, oldNode))
-			{
-				this[kvp.Key] = newNode;
-				IncrementVersion();
-				return true;
-			}
-		}
-		return false;
-	}
+    /// <summary>
+    /// æ›¿æ¢å­èŠ‚ç‚¹ï¼ˆä¿ç•™é”®ï¼‰ã€‚ç”±å®ç°ç±»é€šè¿‡ this[TKey] setter å¤„ç† Parent å˜æ›´ã€‚
+    /// </summary>
+    bool Replace(TNode oldNode, TNode newNode)
+    {
+        foreach (var kvp in this)
+        {
+            if (EqualityComparer<TNode>.Default.Equals(kvp.Value, oldNode))
+            {
+                this[kvp.Key] = newNode;
+                IncrementVersion();
+                return true;
+            }
+        }
+        return false;
+    }
 
-	/// <summary>
-	/// ÒÆ³ıËùÓĞÆ¥ÅäµÄ×Ó½Úµã
-	/// </summary>
-	int RemoveAll(Predicate<TNode>? match = null)
-	{
-		var keys = new List<TKey>();
-		foreach (var kvp in this)
-		{
-			if (match == null || match(kvp.Value))
-			{
-				keys.Add(kvp.Key);
-			}
-		}
-		foreach (var key in keys)
-		{
-			RemoveBy(key);
-		}
-		if (keys.Count > 0)
-		{
-			IncrementVersion();
-		}
-		return keys.Count;
-	}
+    /// <summary>
+    /// ç§»é™¤æ‰€æœ‰åŒ¹é…çš„å­èŠ‚ç‚¹
+    /// </summary>
+    int RemoveAll(Predicate<TNode>? match = null)
+    {
+        var keys = new List<TKey>();
+        foreach (var kvp in this)
+        {
+            if (match == null || match(kvp.Value))
+            {
+                keys.Add(kvp.Key);
+            }
+        }
+        foreach (var key in keys)
+        {
+            RemoveBy(key);
+        }
+        if (keys.Count > 0)
+        {
+            IncrementVersion();
+        }
+        return keys.Count;
+    }
 
-	/// <summary>
-	/// ²éÑ¯ÊÇ·ñ´æÔÚ¾ßÓĞÖ¸¶¨ÖµµÄ×Ó½Úµã
-	/// </summary>
-	bool Contains(TValue value)
-	{
-		foreach (var kvp in this)
-		{
-			if (ValueComparer.Equals(kvp.Value.Value, value))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
+    /// <summary>
+    /// æŸ¥è¯¢æ˜¯å¦å­˜åœ¨å…·æœ‰æŒ‡å®šå€¼çš„å­èŠ‚ç‚¹
+    /// </summary>
+    bool Contains(TValue value)
+    {
+        foreach (var kvp in this)
+        {
+            if (ValueComparer.Equals(kvp.Value.Value, value))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	/// <summary>
-	/// ¸Ä±ä°æ±¾ºÅ
-	/// </summary>
-	internal void IncrementVersion();
+    /// <summary>
+    /// æ”¹å˜ç‰ˆæœ¬å·
+    /// </summary>
+    internal void IncrementVersion();
+
+    // ==================== ICollection<KeyValuePair> æ¡¥æ¥ ====================
+
+    bool ICollection<KeyValuePair<TKey, TNode>>.IsReadOnly => false;
+
+    void ICollection<KeyValuePair<TKey, TNode>>.Add(KeyValuePair<TKey, TNode> item)
+    {
+        Add(item.Key, item.Value);
+    }
+
+    bool ICollection<KeyValuePair<TKey, TNode>>.Remove(KeyValuePair<TKey, TNode> item)
+    {
+        if (TryGetValue(item.Key, out var existing) && EqualityComparer<TNode>.Default.Equals(existing, item.Value))
+        {
+            return Remove(item.Key);
+        }
+        return false;
+    }
+
+    bool ICollection<KeyValuePair<TKey, TNode>>.Contains(KeyValuePair<TKey, TNode> item)
+    {
+        return TryGetValue(item.Key, out var existing) && EqualityComparer<TNode>.Default.Equals(existing, item.Value);
+    }
+
+    void ICollection<KeyValuePair<TKey, TNode>>.CopyTo(KeyValuePair<TKey, TNode>[] array, int arrayIndex)
+    {
+        foreach (var kvp in this)
+        {
+            array[arrayIndex++] = kvp;
+        }
+    }
 }

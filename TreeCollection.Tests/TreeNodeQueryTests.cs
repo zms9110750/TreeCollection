@@ -1,5 +1,5 @@
-using zms9110750.TreeCollection.Ordered;
 using zms9110750.TreeCollection.Abstract;
+using zms9110750.TreeCollection.Ordered;
 
 namespace TreeCollection.Tests;
 
@@ -10,7 +10,8 @@ public class TreeNodeQueryTests
 {
     #region 索引器
 
-    [Fact] public void IndexerGetReturnsCorrectNode()
+    [Fact]
+    public void IndexerGetReturnsCorrectNode()
     {
         var root = new TreeNode<string>("root");
         var a = root.Add("a");
